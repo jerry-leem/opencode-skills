@@ -1,6 +1,7 @@
 # opencode-skills
 
-OpenCode용 스킬 모음이다. 각 스킬은 `skills/<skill-name>/`에 독립적으로 관리한다.
+OpenCode용 스킬 모음이며 `do-loop`는 Codex에서도 사용할 수 있다.
+각 스킬은 `skills/<skill-name>/`에 독립적으로 관리한다.
 
 | 스킬 | 기능 |
 | --- | --- |
@@ -13,6 +14,8 @@ OpenCode용 스킬 모음이다. 각 스킬은 `skills/<skill-name>/`에 독립�
 ```text
 skills/do-loop/
 ├── SKILL.md
+├── agents/
+│   └── openai.yaml
 ├── templates/
 │   ├── GOAL.md
 │   ├── PROGRESS.md
@@ -31,7 +34,7 @@ skills/do-loop/
 ## do-loop 설치
 
 OpenCode가 설치되어 있어야 한다. 스킬 자체는 Markdown으로 구성되어 추가 런타임이나 패키지가 필요 없다.
-아래 명령은 macOS/Linux 셸 기준이다. 비공개 저장소를 받으려면 GitHub 계정에 접근 권한이 있어야 한다.
+아래 명령은 macOS/Linux 셸 기준이다. 이 저장소는 공개 저장소다.
 
 원하는 상위 디렉터리에서 GitHub CLI로 복제한다.
 
@@ -69,7 +72,36 @@ fi
 이 저장소의 `skills/`는 배포용 경로이며 복제만으로 자동 등록되지 않는다.
 발견 경로와 필수 frontmatter는 [OpenCode 공식 스킬 문서](https://opencode.ai/docs/skills/)를 따른다.
 
-## 사용
+## Codex 전역 설치
+
+같은 `skills/do-loop/` 폴더를 Codex 전역 스킬 경로에 설치한다.
+Codex의 표시 정보와 자동 선택 정책은 `agents/openai.yaml`에 포함되어 있다.
+이 저장소 루트에서 실행한다. 기존 설치가 있으면 덮어쓰지 않는다.
+
+```bash
+codex_skill_root="${CODEX_HOME:-$HOME/.codex}/skills"
+if [ -e "$codex_skill_root/do-loop" ] || [ -L "$codex_skill_root/do-loop" ]; then
+  echo "이미 설치되어 있습니다: $codex_skill_root/do-loop"
+else
+  mkdir -p "$codex_skill_root" && cp -R skills/do-loop "$codex_skill_root/do-loop"
+fi
+```
+
+이 경로는 Codex CLI 0.160.0에서 검색을 검증했다.
+[공식 문서](https://learn.chatgpt.com/docs/build-skills)의 사용자 공통 경로인
+`~/.agents/skills`를 사용하는 환경에서는 위 변수만 그 경로로 바꿀 수 있다.
+동일한 스킬을 두 경로에 중복 설치하지 않는다. 설치 후 목록에 보이지 않으면 Codex를 재시작한다.
+
+Codex에서 다음처럼 호출한다. 여러 단계 개발·복구 요청에서는 자동 선택도 허용한다.
+
+```text
+$do-loop GOAL.md와 PROGRESS.md를 읽고 완료 조건을 검증할 때까지 이어서 작업해줘.
+```
+
+전역 설치는 모든 프로젝트에서 선택할 수 있게 한다. 모든 질문에 루프 실행을 강제하지 않는다.
+상태 파일은 각 작업 대상 프로젝트에 저장한다.
+
+## OpenCode 사용
 
 작업 대상 프로젝트에서 OpenCode에 다음처럼 요청한다.
 
@@ -93,7 +125,7 @@ do-loop 스킬로 AGENTS.md, GOAL.md, PROGRESS.md, DECISIONS.md를 읽고
 실제 저장소 상태와 대조한 다음 중단된 작업을 이어가줘.
 ```
 
-스킬은 에이전트가 `skill({ name: "do-loop" })`로 읽는 지침이다.
+OpenCode에서는 에이전트가 `skill({ name: "do-loop" })`로 읽는 지침이다.
 `/do-loop` 슬래시 명령이나 백그라운드 실행기는 포함하지 않는다.
 세션 종료 후에는 사용자가 다시 실행해야 한다.
 

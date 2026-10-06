@@ -1,0 +1,7 @@
+interface:
+  display_name: "do-loop"
+  short_description: "목표를 향해 구현과 검증을 반복하고 파일로 작업 상태 복구"
+  default_prompt: "$do-loop 스킬로 GOAL.md와 진행 상태를 확인하고 완료 조건을 검증하거나 중단 조건에 도달할 때까지 작업해줘."
+
+policy:
+  allow_implicit_invocation: true

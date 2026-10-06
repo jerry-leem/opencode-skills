@@ -59,3 +59,29 @@ Markdown 파일 7개의 상대 링크 6개가 모두 실제 파일을 가리키�
 
 설치 규칙은 [OpenCode 공식 스킬 문서](https://opencode.ai/docs/skills/)를 확인했다.
 검증은 임시 디렉터리에서 수행했으며 사용자 전역 스킬 설치는 변경하지 않았다.
+
+## Codex 지원 및 전역 설치 검증
+
+추가 검증일: 2026-10-06. 환경: macOS, Codex CLI 0.160.0, OpenCode 1.18.30.
+이번에는 사용자 요청에 따라 `~/.codex/skills/do-loop/`에 실제로 전역 설치했다.
+
+| 항목 | 방법 | 결과 |
+| --- | --- | --- |
+| 원본·설치본 스킬 형식 | 양쪽 경로에 `quick_validate.py` 실행 | 모두 `Skill is valid!` |
+| 설치 파일 일치 | 원본과 설치본을 `diff -rq`로 비교 | 차이 없음 |
+| Codex 메타데이터 | PyYAML 파싱, 설명 길이, `$do-loop` 기본 프롬프트, 자동 선택 정책 검사 | 통과 |
+| 실제 스킬 발견 | `codex debug prompt-input`의 모델 입력 목록 확인 | 사용자 전역 `do-loop/SKILL.md` 등록 확인 |
+| OpenCode 호환성 | 갱신된 폴더를 임시 프로젝트에 설치 후 `opencode --pure debug skill` 실행 | 이름·프로젝트 설치 경로 확인 |
+| 현재 대화 적용 준비 | 전역 설치본의 `SKILL.md` 직접 읽기 | 지침 로드 완료 |
+
+Codex의 모델 입력 전체에는 개인 환경 정보가 포함될 수 있어 저장소에 보관하지 않았다.
+확인 명령은 다음과 같다. 모델 추론을 호출하지 않는 검색·등록 검증이다.
+
+```bash
+codex debug prompt-input 'do-loop 스킬 검색 확인' > /tmp/do-loop-codex-input.json
+rg -o 'do-loop[^\\]*' /tmp/do-loop-codex-input.json
+```
+
+YAML 언어 서버는 설치되어 있지 않아 PyYAML 파싱과 실제 Codex 검색으로 검증했다.
+장시간 반복 개발과 다중 세션 복구의 모델 E2E 검증은 수행하지 않았다.
+호출·발견·메타데이터 규칙은 [공식 OpenAI 문서](https://learn.chatgpt.com/docs/build-skills)를 확인했다.
